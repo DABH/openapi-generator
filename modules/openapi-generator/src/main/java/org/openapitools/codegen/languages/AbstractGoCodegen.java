@@ -511,6 +511,37 @@ public abstract class AbstractGoCodegen extends DefaultCodegen implements Codege
     }
 
     @Override
+    public Map<String, Object> postProcessModelsEnum(Map<String, Object> objs) {
+        objs = super.postProcessModelsEnum(objs);
+
+        List<Object> models = (List<Object>) objs.get("models");
+        for (Object _mo : models) {
+            Map<String, Object> mo = (Map<String, Object>) _mo;
+            CodegenModel cm = (CodegenModel) mo.get("model");
+
+            // For enum var names prepend with this model's name to help prevent namespace collision
+            if (Boolean.TRUE.equals(cm.isEnum) && cm.allowableValues != null) {
+                String prefix = toEnumVarName(cm.name, "string") + "_";
+                cm.allowableValues = prefixAllowableValues(cm.allowableValues, prefix);
+            }
+        }
+        return objs;
+    }
+
+    public Map<String, Object> prefixAllowableValues(Map<String, Object> allowableValues, String prefix) {
+        if (allowableValues.get("enumVars") != null) {
+            List<Map<String, Object>> enumVars = (List<Map<String, Object>>) allowableValues.get("enumVars");
+            for (Map<String, Object> enumVar : enumVars) {
+                String enumName = (String) enumVar.get("name");
+                if (enumName != null) {
+                    enumVar.put("name", prefix + enumName);
+                }
+            }
+        }
+        return allowableValues;
+    }
+
+    @Override
     public Map<String, Object> postProcessSupportingFileData(Map<String, Object> objs) {
         generateYAMLSpecFile(objs);
         return super.postProcessSupportingFileData(objs);
