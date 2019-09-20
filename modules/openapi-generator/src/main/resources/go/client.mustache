@@ -65,7 +65,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	// API Services
 {{#apis}}
 {{#operations}}
-	c.{{classname}} = ({{classname}}Service)(c.common)
+	c.{{classname}} = (*{{classname}}Service)(&c.common)
 {{/operations}}
 {{/apis}}
 {{/apiInfo}}
